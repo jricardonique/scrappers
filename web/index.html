@@ -6,17 +6,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NYPost QA Dashboard</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <main>
     <h1>NYPost QA Dashboard</h1>
     <section>
-      <h2>Latest Headlines Snapshot</h2>
-      <pre id="headlines">Loading…</pre>
+      <h2>KPIs</h2>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Headlines</div><div id="kpi-headlines" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-label">Multimedia Checked</div><div id="kpi-media" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-label">Media Errors</div><div id="kpi-media-err" class="kpi-value warn">0</div></div>
+        <div class="kpi"><div class="kpi-label">Slow URLs</div><div id="kpi-slow" class="kpi-value warn">0</div></div>
+        <div class="kpi"><div class="kpi-label">Schema Issues</div><div id="kpi-schema" class="kpi-value warn">0</div></div>
+      </div>
     </section>
+
     <section>
-      <h2>Pipeline Summary</h2>
-      <pre id="summary">Loading…</pre>
+      <h2>Trends (last runs)</h2>
+      <canvas id="chartRuns" height="120"></canvas>
+    </section>
+
+    <section>
+      <h2>Latest Headlines (first 20)</h2>
+      <table id="tbl-headlines"><thead><tr><th>#</th><th>Title</th><th>Section</th><th>URL</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section>
+      <h2>Latest Summary (raw)</h2>
+      <pre id="summary"></pre>
     </section>
   </main>
   <script src="/app.js"></script>

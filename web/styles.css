@@ -1,5 +1,13 @@
-body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;padding:0;background:#0f172a;color:#e2e8f0}
-main{max-width:960px;margin:40px auto;padding:0 16px}
-h1{font-size:28px;margin-bottom:24px}
+
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;background:#0f172a;color:#e2e8f0}
+main{max-width:1100px;margin:32px auto;padding:0 16px}
+h1{font-size:28px;margin-bottom:16px}
 section{background:#111827;padding:16px;border-radius:8px;margin-bottom:16px}
-pre{white-space:pre-wrap;word-break:break-word}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:#0b1220;border:1px solid #1f2937;border-radius:8px;padding:12px}
+.kpi-label{font-size:12px;color:#93a4b7}
+.kpi-value{font-size:24px;margin-top:6px}
+.kpi-value.warn{color:#f59e0b}
+#tbl-headlines{width:100%;border-collapse:collapse}
+#tbl-headlines th,#tbl-headlines td{border-bottom:1px solid #1f2937;padding:8px 6px;text-align:left}
+#tbl-headlines a{color:#93c5fd}

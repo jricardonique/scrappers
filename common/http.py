@@ -18,10 +18,9 @@ class ThrottledSession(requests.Session):
         self.mount('http://', adapter)
         self.mount('https://', adapter)
     def request(self, method, url, **kwargs):
-        now = time.time(); elapsed = now - self.last_request_ts; min_interval = 1.0/self.rate_limit
-        if elapsed < min_interval:
-            time.sleep(min_interval - elapsed)
+        now=time.time(); elapsed=now-self.last_request_ts; min_interval=1.0/self.rate_limit
+        if elapsed<min_interval: time.sleep(min_interval-elapsed)
         kwargs.setdefault('timeout', self.timeout)
         resp = super().request(method, url, **kwargs)
-        self.last_request_ts = time.time()
+        self.last_request_ts=time.time()
         return resp

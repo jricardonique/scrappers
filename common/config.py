@@ -52,38 +52,25 @@ def _env_substitute(value: Any) -> Any:
 def load_config(path: Path) -> Config:
     data = yaml.safe_load(path.read_text())
     for k in ('user_agent','rate_limit_per_sec','request_timeout'):
-        if k in data:
-            data[k] = _env_substitute(data[k])
-
-    def _num(value, fallback, cast):
+        if k in data: data[k] = _env_substitute(data[k])
+    def _num(v, fb, cast):
         try:
-            if value is None:
-                return fallback
-            if isinstance(value, str):
-                v = value.strip()
-                if v == '':
-                    return fallback
+            if v is None: return fb
+            if isinstance(v,str):
+                v=v.strip();
+                if v=='': return fb
                 return cast(v)
-            return cast(value)
+            return cast(v)
         except Exception:
-            return fallback
-
+            return fb
     sels = Selectors(**data.get('selectors', {}))
     ua = data.get('user_agent') or os.getenv('HTTP_USER_AGENT') or 'NYPost-QA-Scraper/1.0'
     rate = _num(data.get('rate_limit_per_sec', 2), 2.0, float)
     timeout = _num(data.get('request_timeout', 15), 15, int)
     th = Thresholds(**data.get('thresholds', {}))
     em = EmailCfg(**data.get('email', {}))
-
     return Config(
-        base_url=data['base_url'],
-        sections=data['sections'],
-        output_dir=Path(data['output_dir']),
-        user_agent=ua,
-        rate_limit_per_sec=rate,
-        request_timeout=timeout,
-        selectors=sels,
-        thresholds=th,
-        email=em,
-        respect_robots_txt=bool(data.get('respect_robots_txt', True))
+        base_url=data['base_url'], sections=data['sections'], output_dir=Path(data['output_dir']),
+        user_agent=ua, rate_limit_per_sec=rate, request_timeout=timeout,
+        selectors=sels, thresholds=th, email=em, respect_robots_txt=bool(data.get('respect_robots_txt', True))
     )
