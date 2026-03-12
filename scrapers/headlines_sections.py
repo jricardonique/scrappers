@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
@@ -6,9 +7,6 @@ from urllib.parse import urljoin
 import requests
 from common.http import ThrottledSession
 
-# Sections that do NOT live at https://nypost.com/<section>
-# - Page Six is its own site
-# - Trending is modeled as a tag page on nypost.com
 SECTION_OVERRIDES: Dict[str, str] = {
     "page-six": "https://pagesix.com",
     "trending": "https://nypost.com/tag/trending/",
@@ -31,12 +29,9 @@ def crawl_section(base_url: str, section: str, limit: int, selectors, session: T
     try:
         r = session.get(url); r.raise_for_status()
     except requests.HTTPError:
-        # If this section 404s, don't crash the pipeline; just skip it.
         return []
-
     soup = BeautifulSoup(r.text, 'lxml')
     cards = soup.select(selectors.article_card) or soup.find_all('article')
-
     stories: List[Story] = []
     rank = 1
     for c in cards:
@@ -45,7 +40,6 @@ def crawl_section(base_url: str, section: str, limit: int, selectors, session: T
         title = (h.get_text(strip=True) if h else '')
         href = a['href'] if a and a.has_attr('href') else ''
         if href and href.startswith('/'):
-            # Make absolute against the page we fetched (url), not always nypost.com
             href = urljoin(url, href)
         if href and title:
             stories.append(Story(rank, section, title, href))
