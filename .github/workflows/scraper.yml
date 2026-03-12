@@ -1,0 +1,89 @@
+name: NYPost QA Scraper Suite (Option B corrected)
+
+on:
+  schedule:
+    - cron: '0 * * * *'     # hourly
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          HTTP_USER_AGENT: NYPost-QA-Scraper/1.0 (+QA)
+          RATE_LIMIT_PER_SEC: '2'
+          REQUEST_TIMEOUT: '15'
+          SKIP_NETWORK: ${{ vars.SKIP_NETWORK || 'false' }}
+          DISABLE_EMAIL: ${{ vars.DISABLE_EMAIL || 'false' }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: |
+          python pipeline.py
+
+      - name: Copy artifacts to web/data
+        run: |
+          latest=$(ls -1d outputs/* | tail -n 1)
+          echo "Latest run => $latest"
+          mkdir -p web/data
+          cp "$latest/headlines_sections.json" web/data/latest_headlines.json || true
+          cp "$latest/pipeline_summary.json" web/data/latest_summary.json || true
+
+      - name: Update history.json (append last summary)
+        shell: python
+        run: |
+          import json, os, glob, datetime
+          os.makedirs('web/data', exist_ok=True)
+          latest = sorted(glob.glob('outputs/*'))[-1]
+          with open(os.path.join(latest,'pipeline_summary.json'),'r') as f:
+              summary = json.load(f)
+          ts = datetime.datetime.utcnow().isoformat()
+          hist_path='web/data/history.json'
+          try:
+              with open(hist_path,'r') as f:
+                  hist=json.load(f)
+              if not isinstance(hist,list): hist=[]
+          except Exception:
+              hist=[]
+          hist.append({'ts': ts, 'summary': summary})
+          hist=hist[-30:]
+          with open(hist_path,'w') as f:
+              json.dump(hist, f, indent=2)
+
+      - name: Commit updated dashboard data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add web/data/*.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(dashboard): update data $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            git push
+          else
+            echo "No dashboard updates"
+          fi
+
+      - name: Trigger Netlify build (optional)
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        if: ${{ env.NETLIFY_BUILD_HOOK != '' }}
+        run: |
+          curl -X POST -s -o /dev/null -w "%{http_code}\n" "$NETLIFY_BUILD_HOOK"
