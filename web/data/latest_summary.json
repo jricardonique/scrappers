@@ -1,18 +1,18 @@
 {
   "headlines": {
-    "count": 0
+    "count": 180
   },
   "multimedia": {
-    "checked": 0,
+    "checked": 1048,
     "errors": 0
   },
   "perf": {
-    "checked": 0,
+    "checked": 7,
     "slow": 0
   },
   "schema": {
-    "checked": 0,
-    "issues": 0
+    "checked": 40,
+    "issues": 40
   },
-  "output": "outputs/20260312_154543"
+  "output": "outputs/20260312_155724"
 }
