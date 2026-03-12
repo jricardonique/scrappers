@@ -1,0 +1,27 @@
+
+base_url: "https://nypost.com"
+sections: ["news","metro","sports","business","entertainment","tech","real-estate","living","media","opinion","page-six","trending"]
+output_dir: "outputs"
+user_agent: "${HTTP_USER_AGENT}"
+rate_limit_per_sec: ${RATE_LIMIT_PER_SEC}
+request_timeout: ${REQUEST_TIMEOUT}
+selectors:
+  article_card: "article, .story__content, .card, .story, .post-item"
+  headline: "h1, h2, h3, .headline, .entry-title, .post-title"
+  link: "a"
+  author: "meta[name='author'], meta[property='article:author'], .byline, .author, [rel='author']"
+  time: "meta[property='article:published_time'], time, .timestamp, .date"
+  section_tag: "meta[property='article:section'], [data-section], .section, .channel"
+  images: "img, figure img"
+  videos: "video, .video, [data-video]"
+thresholds:
+  perf_slow_ms: 1500
+  schema_max_missing: 0
+  multimedia_fail_alert_min: 1
+email:
+  enabled: true
+  provider: sendgrid
+  to_env: TO_EMAIL
+  from_env: FROM_EMAIL
+  api_key_env: SENDGRID_API_KEY
+respect_robots_txt: true
