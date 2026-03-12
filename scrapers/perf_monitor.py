@@ -21,7 +21,6 @@ def probe(session: ThrottledSession, url: str) -> Dict:
         row['status']=str(e)
     return row
 
-
 def run(urls: List[str], session: ThrottledSession) -> Dict:
     rows=[probe(session, u) for u in urls]
     slow=[r for r in rows if r.get('elapsed_ms') and r['elapsed_ms']>1500]

@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from bs4 import BeautifulSoup
-from typing import List, Dict
+from typing import Dict
 from urllib.parse import urljoin
 
 FIELDS=['title','author','published','section','lead_image']
@@ -21,7 +21,6 @@ def parse_article(html: str, selectors, base_url: str) -> Dict:
     if lead_image and lead_image.startswith('/'):
         lead_image=urljoin(base_url, lead_image)
     return {'title': title,'author': author,'published': published,'section': section,'lead_image': lead_image}
-
 
 def validate_article(fields: Dict) -> Dict:
     missing=[k for k in FIELDS if not fields.get(k)]

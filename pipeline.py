@@ -7,7 +7,7 @@ from common.config import load_config
 from common.http import ThrottledSession
 from common.output import run_dir, write_json
 from common.logging_config import setup_logging
-from scrapers import headlines_sections, multimedia_validator, perf_monitor, article_schema_validator
+from scrapers import headlines_sections, perf_monitor, article_schema_validator
 
 
 def main():
@@ -18,23 +18,21 @@ def main():
     out = run_dir(Path(cfg.output_dir))
     logger.info(f'Pipeline output: {out}')
 
-    # 1) Headlines snapshot
-    rows = headlines_sections.run(cfg.base_url, cfg.sections[:6], 30, cfg.selectors, session)
-    write_json(out / 'headlines_sections.json', rows)
+    # headlines grouped (top 50 per section)
+    grouped = headlines_sections.run(cfg.base_url, cfg.sections, 50, cfg.selectors, session)
+    write_json(out / 'headlines_sections.json', grouped)
 
-    # URLs from snapshot (limit for runtime)
-    urls = [r['url'] for r in rows][:40]
-
-    # 2) Multimedia
-    m = multimedia_validator.run(cfg.base_url, urls, cfg.selectors, session)
-
-    # 3) Performance
-    perf_urls=[cfg.base_url]+[f"{cfg.base_url}/{s}" for s in cfg.sections[:6]]
+    # perf on base + sections
+    perf_urls = [cfg.base_url] + [f"{cfg.base_url.rstrip('/')}/{s}" for s in cfg.sections]
     p = perf_monitor.run(perf_urls, session)
 
-    # 4) Schema
+    # schema over a subset of article URLs
+    all_urls=[]
+    for sec in grouped.get('sections', []):
+        all_urls.extend([r['url'] for r in grouped['by_section'].get(sec, [])])
+    urls = all_urls[:40]
+
     s_rows=[]
-    from common.http import ThrottledSession as _TS
     for u in urls:
         try:
             r=session.get(u)
@@ -47,7 +45,12 @@ def main():
     s_summary={'checked': len(s_rows), 'issues': sum(1 for r in s_rows if r.get('missing_fields'))}
     write_json(out / 'article_schema_validation.json', s_rows)
 
-    summary={'headlines': {'count': len(rows)}, 'multimedia': {'checked': m['checked'], 'errors': m['errors']}, 'perf': {'checked': p['checked'], 'slow': p['slow']}, 'schema': s_summary, 'output': str(out)}
+    summary={
+        'headlines': {'count': sum(len(grouped['by_section'].get(sec, [])) for sec in grouped['sections'])},
+        'perf': {'checked': p['checked'], 'slow': p['slow']},
+        'schema': s_summary,
+        'output': str(out)
+    }
     write_json(out / 'pipeline_summary.json', summary)
     logger.info(f'Summary: {summary}')
 

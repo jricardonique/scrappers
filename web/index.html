@@ -14,9 +14,7 @@
     <section>
       <h2>KPIs</h2>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">Headlines</div><div id="kpi-headlines" class="kpi-value">0</div></div>
-        <div class="kpi"><div class="kpi-label">Multimedia Checked</div><div id="kpi-media" class="kpi-value">0</div></div>
-        <div class="kpi"><div class="kpi-label">Media Errors</div><div id="kpi-media-err" class="kpi-value warn">0</div></div>
+        <div class="kpi"><div class="kpi-label">Total Headlines</div><div id="kpi-headlines" class="kpi-value">0</div></div>
         <div class="kpi"><div class="kpi-label">Slow URLs</div><div id="kpi-slow" class="kpi-value warn">0</div></div>
         <div class="kpi"><div class="kpi-label">Schema Issues</div><div id="kpi-schema" class="kpi-value warn">0</div></div>
       </div>
@@ -28,7 +26,17 @@
     </section>
 
     <section>
-      <h2>Latest Headlines (first 20)</h2>
+      <h2>Latest Headlines — per section (Top 50, 10/page)</h2>
+      <div class="toolbar">
+        <label>Section:
+          <select id="sectionSelect"></select>
+        </label>
+        <div class="pager">
+          <button id="prevBtn">Prev</button>
+          <span id="pageLabel">1/1</span>
+          <button id="nextBtn">Next</button>
+        </div>
+      </div>
       <table id="tbl-headlines"><thead><tr><th>#</th><th>Title</th><th>Section</th><th>URL</th></tr></thead><tbody></tbody></table>
     </section>
 

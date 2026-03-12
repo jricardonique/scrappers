@@ -8,10 +8,13 @@ from common.http import ThrottledSession
 
 @dataclass
 class Story:
-    rank: int; section: str; title: str; url: str
+    rank: int
+    section: str
+    title: str
+    url: str
 
 def crawl_section(base_url: str, section: str, limit: int, selectors, session: ThrottledSession) -> List[Story]:
-    url = f"{base_url.rstrip('/')}/{section.strip('/')}" if section != 'top-stories' else base_url
+    url = f"{base_url.rstrip('/')}/{section.strip('/')}"
     r = session.get(url); r.raise_for_status()
     soup = BeautifulSoup(r.text, 'lxml')
     cards = soup.select(selectors.article_card) or soup.find_all('article')
@@ -29,10 +32,11 @@ def crawl_section(base_url: str, section: str, limit: int, selectors, session: T
             break
     return stories
 
-
-def run(base_url: str, sections: List[str], limit: int, selectors, session: ThrottledSession) -> List[Dict]:
-    rows: List[Dict] = []
+def run(base_url: str, sections: List[str], limit: int, selectors, session: ThrottledSession) -> Dict:
+    by_section: Dict[str, List[Dict]] = {}
     for sec in sections:
+        rows = []
         for s in crawl_section(base_url, sec, limit, selectors, session):
             rows.append({'rank': s.rank, 'section': s.section, 'title': s.title, 'url': s.url})
-    return rows
+        by_section[sec] = rows
+    return { 'sections': sections, 'by_section': by_section }
